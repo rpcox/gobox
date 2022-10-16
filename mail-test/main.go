@@ -20,18 +20,22 @@ var htmlBody = `<!DOCTYPE html>
 
 var (
 	Cc       = flag.String("cc", "", "Identify an account to CC (comma separated)")
-	From     = flag.String("from", "no-reply@spud.com", "Identify the originating account")
+	From     = flag.String("from", "", "Identify the originating account")
 	Subject  = flag.String("subject", "mail-test", "Identify the subject line")
-	To       = flag.String("to", "rpcox@cox.net", "Identify the destination account")
+	To       = flag.String("to", "", "Identify the destination account")
 
 	Port     = flag.Int("port", 25, "Identify the port used by mail server")
-	Server   = flag.String("server", "smtp.cox.net", "Identify the mailhost")
+	Server   = flag.String("server", "", "Identify the mailhost")
 )
 
 func main() {
 
 	server := mail.NewSMTPClient()
-	server.Host = *Server
+	if *Server != "" {
+		server.Host = *Server
+	} else {
+		log.Fatal("-server must be identified")
+	}
 	server.Port = *Port 
 	server.Authentication = mail.AuthNone
 
@@ -41,11 +45,17 @@ func main() {
 	}
 
 	email := mail.NewMSG()
-	email.SetFrom(*From)
-	email.AddTo(*To)
-	//email.AddCc("person@email.com")
-	email.SetSubject(*Subject)
+	if *From != "" && *To != "" {
+		email.SetFrom(*From)
+		email.AddTo(*To)
+	} else {
+		log.Fatal("Sender (-from) and recipient (-to) must be identified")
+	}
 
+	if *Cc != "" {
+		email.AddCc(*Cc)
+	}
+	email.SetSubject(*Subject)
 	email.SetBody(mail.TextHTML, fmt.Sprintf(htmlBody, *server))
 
 	err = email.Send(smtpClient)
