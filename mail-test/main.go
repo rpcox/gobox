@@ -31,11 +31,10 @@ var (
 func main() {
 
 	server := mail.NewSMTPClient()
-	if *Server != "" {
-		server.Host = *Server
-	} else {
+	if len(*Server) > 0 {
 		log.Fatal("-server must be identified")
 	}
+	server.Host = *Server
 	server.Port = *Port 
 	server.Authentication = mail.AuthNone
 
@@ -45,14 +44,10 @@ func main() {
 	}
 
 	email := mail.NewMSG()
-	if *From != "" && *To != "" {
-		email.SetFrom(*From)
-		email.AddTo(*To)
-	} else {
-		log.Fatal("Sender (-from) and recipient (-to) must be identified")
-	}
+	email.SetFrom(*From)
+	email.AddTo(*To)
 
-	if *Cc != "" {
+	if len(*Cc) > 0 {
 		email.AddCc(*Cc)
 	}
 	email.SetSubject(*Subject)
