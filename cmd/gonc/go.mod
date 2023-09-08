@@ -1,3 +1,3 @@
-module github.com/rpcox/gobox/cmd/sendit
+module github.com/rpcox/gobox/cmd/gonc
 
 go 1.20
