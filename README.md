@@ -1,3 +1,3 @@
 ## gobox
 
-A collection of nuts and bolts I found useful
+A collection of nuts and bolts I still find useful
