@@ -1,6 +1,4 @@
 // Send text strings over the network to a server.
-// The intent was to send preformatted syslog messages for regex testing.
-// Security folks often don't think mere mortals can handle netcat.
 package main
 
 import (
@@ -98,7 +96,7 @@ func main() {
 		var b *[]byte
 		transport.msgQ <- b
 
-	} else {
+ 	} else {
 		files := flag.Args()
 		if len(files) == 0 {
 			log.Fatal("no files identified.  nothing to do.  exiting.")

@@ -1,3 +1,3 @@
-module github.com/rpcox/gobox/cmd/gonc
+module github.com/rpcox/gobox/network/gonc
 
-go 1.20
+go 1.21.5
