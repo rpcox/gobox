@@ -1,5 +1,14 @@
 ## bps
 
+
+    tcpdump -i <device> -l -e -n
+
+    -e Print the link-level header
+    -l Make stdout line buffered
+    -n Don't convert addreses to names
+
+
+
     $ sudo tcpdump -i eth0 -l -e -n | bps
     tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
     listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
