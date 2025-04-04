@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -19,49 +21,50 @@ func sigHandler(sigChan chan os.Signal, done chan bool) {
 	}
 }
 
-func ValidateTime(at string) (time.Time, error) {
+func CalcTime(at string) (time.Time, time.Duration, error) {
 	layout := "2006-01-02 15:04:05"
-
-	now := time.Now()
-	fmt.Println("  now:", now.UTC().Format(layout))
 
 	var tp, nullTime time.Time
 	tp, err := time.Parse(layout, at)
-	fmt.Println("alert:", tp)
+	now := time.Now()
 
 	if err != nil {
-		return nullTime, err
+		return nullTime, time.Duration(0), err
 	}
 
 	if tp.Before(now) {
-		return nullTime, fmt.Errorf("submitted time is in the past")
+		return nullTime, time.Duration(0), fmt.Errorf("submitted time is in the past")
 	} else if tp.Equal(now) {
-		return nullTime, fmt.Errorf("submitted time is equal to current time")
+		return nullTime, time.Duration(0), fmt.Errorf("submitted time is equal to current time")
 	}
 
-	return tp, nil
+	diff := tp.Sub(now)
+	fmt.Println("first alert time :", tp)
+	fmt.Printf("    current time : %v\n\n", now.UTC().Format(layout))
+
+	return tp, diff, nil
 }
 
-func Alert(alert, done chan bool) {
+func Work(work, done chan bool) {
 	for {
 		select {
-		case <-alert:
-			fmt.Println("alert: time to do something")
+		case <-work:
+			fmt.Println("work, work, work")
 		case <-done:
-			fmt.Println("exiting alert()")
+			fmt.Println("leaving work")
 			return
 		}
 	}
 }
 
-func NewTimer(t time.Time, done, alert, reset chan bool) {
-	fmt.Println("new timer")
-	timer := time.NewTimer(time.Duration(60) * time.Second)
+func NewTimer(td time.Duration, done, alert, reset chan bool) {
+	fmt.Println("* new timer")
+	timer := time.NewTimer(td)
 
 	go func() {
 		select {
 		case <-timer.C:
-			fmt.Println("alert: time to do something")
+			fmt.Println("pop: time to inform the worker")
 			timer.Stop()
 			alert <- true
 			reset <- true
@@ -74,26 +77,61 @@ func NewTimer(t time.Time, done, alert, reset chan bool) {
 		}
 	}()
 }
+
+func CalcInterval(interval string) int {
+	r, err := regexp.Compile(`^(\d+)(\w)`)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	matches := r.FindStringSubmatch(interval)
+	m := 0
+
+	switch matches[2] {
+	case `s`:
+		m = 1
+	case `m`:
+		m = 60
+	case `h`:
+		m = 3600
+	case `d`:
+		m = 86400
+	}
+
+	i, err := strconv.Atoi(matches[1])
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	return m * i
+}
+
 func main() {
 	_at := flag.String("at", "", "time to alert. format = '2006-01-02 15:04:05'")
-	//_interval := flag.String("interval", "", "N[smhd] s = secs, m = mins, ...")
+	_interval := flag.String("interval", "", "N[smhd] s = secs, m = mins, ...")
 	flag.Parse()
 
-	t, err := ValidateTime(*_at)
+	at, td, err := CalcTime(*_at)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	done := make(chan bool)
+	interval := CalcInterval(*_interval)
+
 	alert := make(chan bool)
+	done := make(chan bool)
 	reset := make(chan bool)
+	work := make(chan bool)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go sigHandler(sigChan, done)
 
-	NewTimer(t, done, alert, reset)
+	go Work(work, done)
+	NewTimer(td, done, alert, reset)
 
 	for {
 		select {
@@ -101,11 +139,15 @@ func main() {
 			fmt.Println("exiting main")
 			return
 		case <-alert:
-			now := time.Now().Format(time.RFC3339)
-			fmt.Println(now, "time to do something")
+			now := time.Now().Format(time.RFC3339Nano)
+			fmt.Println("alarm time:", now)
+			fmt.Println("pass the word to the worker")
+			work <- true
 		case <-reset:
-			t = t.Add(time.Duration(2) * time.Minute)
-			NewTimer(t, done, alert, reset)
+			at = at.Add(time.Duration(interval) * time.Second)
+			now := time.Now()
+			td = at.Sub(now)
+			NewTimer(td, done, alert, reset)
 		}
 	}
 
