@@ -57,8 +57,9 @@ func main() {
 	}
 
 	if *_crl {
+	        fmt.Printf("       CRL:\n")
 		for _, v := range cert.CRLDistributionPoints {
-			fmt.Println(v)
+	        	fmt.Printf("          %v\n", v)
 	}
 		fmt.Printf("  Remnant: %q\n", rest)
 	}
