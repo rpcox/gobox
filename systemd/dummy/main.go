@@ -62,7 +62,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "speed must be > 0 and <= 1\n")
 		os.Exit(1)
 	} else {
-		max_cores = int(math.Ceil(float64(runtime.NumCPU()) / *_speed))
+		max_cores = int(math.Ceil(float64(runtime.NumCPU()) * *_speed))
 		if max_cores < 1 {
 			max_cores = 1
 		}
@@ -70,6 +70,7 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "%s %s pid=%d\n", tool, version, os.Getpid())
 	fmt.Fprintf(os.Stderr, "cpu_count=%d\n", runtime.NumCPU())
+	fmt.Fprintf(os.Stderr, "max cores=%d", max_cores)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGUSR2)
