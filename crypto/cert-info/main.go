@@ -14,7 +14,7 @@ func main() {
 	_rem := flag.Bool("rem", false, "Show any remaining text")
 	_san := flag.Bool("san", false, "Show subject alternative names")
 	_ski := flag.Bool("ski", false, "Show subject key identifer")
-	_ku := flag.Bool("key-usage", false, "Show subject key identifer")
+	_ku := flag.Bool("key-usage", false, "Show the list of valid usage")
 	flag.Parse()
 
 	files := flag.Args()
@@ -61,13 +61,13 @@ func main() {
 			ku := make(map[x509.KeyUsage]string)
 			ku[x509.KeyUsageDigitalSignature] = "Digital Signature"
 			ku[x509.KeyUsageContentCommitment] = "Content Commitment"
-			/*ku[3] = "Key Encipherment"
-			ku[4] = "Data Encipherment"
-			ku[5] = "Key Agreement"
-			ku[6] = "Cert Sign"
-			ku[7] = "CRL Sign"
-			ku[8] = "Encipher Only"
-			ku[9] = "Decipher Only"*/
+			ku[x509.KeyUsageKeyEncipherment] = "Key Encipherment"
+			ku[x509.KeyUsageDataEncipherment] = "Data Encipherment"
+			ku[x509.KeyUsageKeyAgreement] = "Key Agreement"
+			ku[x509.KeyUsageCertSign] = "Cert Sign"
+			ku[x509.KeyUsageCRLSign] = "CRL Sign"
+			ku[x509.KeyUsageEncipherOnly] = "Encipher Only"
+			ku[x509.KeyUsageDecipherOnly] = "Decipher Only"
 
 			fmt.Print(" Key Usage: ")
 			var i x509.KeyUsage
