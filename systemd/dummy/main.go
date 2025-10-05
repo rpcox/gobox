@@ -70,7 +70,7 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "%s %s pid=%d\n", tool, version, os.Getpid())
 	fmt.Fprintf(os.Stderr, "cpu_count=%d\n", runtime.NumCPU())
-	fmt.Fprintf(os.Stderr, "max cores=%d", max_cores)
+	fmt.Fprintf(os.Stderr, "max cores=%d\n", max_cores)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGUSR2)
