@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-
-	"github.com/coreos/go-systemd/journal"
 )
 
 var (
@@ -37,11 +35,7 @@ func JournalMessage(done chan bool, mark chan bool) {
 	for {
 		select {
 		case <-mark:
-			msg := fmt.Sprintf("mark [%d]", msgCount)
-			err := journal.Send(msg, journal.PriInfo, nil)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-			}
+			fmt.Fprintf(os.Stdout, "mark %d\n", msgCount)
 			msgCount++
 		case <-done:
 			fmt.Println("exit JournalMessage()\n")
