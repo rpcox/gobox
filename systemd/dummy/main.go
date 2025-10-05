@@ -31,6 +31,25 @@ func ElevateCPU(done chan bool, id int) {
 	}
 }
 
+func JournalMessage(done chan bool, mark chan bool) {
+	msgCount := 1
+
+	for {
+		select {
+		case <-mark:
+			msg := fmt.Sprintf("mark [%d]", msgCount)
+			err := journal.Send(msg, journal.PriInfo, nil)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+			}
+			msgCount++
+		case <-done:
+			fmt.Println("exit JournalMessage()\n")
+			return
+		}
+	}
+}
+
 func main() {
 
 	fmt.Printf("%s %s pid=%d\n", tool, version, os.Getpid())
@@ -38,9 +57,9 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
 
-	msgCount := 1
 	cpuElevated := false
 	done := make(chan bool, runtime.NumCPU())
+	mark := make(chan bool)
 
 	for {
 		select {
@@ -57,20 +76,17 @@ func main() {
 						done <- true
 					}
 				}
+			} else if sig == syscall.SIGUSR2 {
+				mark <- true
 			} else if sig == syscall.SIGTERM || sig == syscall.SIGINT {
 				close(done)
 				close(sigChan)
+				close(mark)
+				time.Sleep(1 * time.Second)
 				return
 			}
 		default:
-			msg := fmt.Sprintf("dummy message [%d]", msgCount)
-			err := journal.Send(msg, journal.PriInfo, nil)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-			}
-
-			msgCount++
-			time.Sleep(30 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 	}
 }
