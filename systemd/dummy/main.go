@@ -49,7 +49,7 @@ func main() {
 	fmt.Fprintf(os.Stderr, "%s %s pid=%d\n", tool, version, os.Getpid())
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGUSR2)
 
 	cpuElevated := false
 	done := make(chan bool, runtime.NumCPU())
