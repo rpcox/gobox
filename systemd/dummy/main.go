@@ -55,6 +55,7 @@ func main() {
 	done := make(chan bool, runtime.NumCPU())
 	mark := make(chan bool)
 	go JournalMessage(done, mark)
+	goRoutineCount := 0
 
 	for {
 		select {
@@ -83,6 +84,11 @@ func main() {
 			}
 		default:
 			time.Sleep(1 * time.Second)
+			if goRoutineCount%60 == 0 {
+				fmt.Fprintf(os.Stderr, "goroutine count %d\n", runtime.NumGoroutine())
+				goRoutineCount = 0
+			}
+			goRoutineCount++
 		}
 	}
 }
