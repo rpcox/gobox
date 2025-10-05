@@ -29,7 +29,7 @@ func ElevateCPU(done chan bool, id int) {
 	}
 }
 
-func JournalMessage(done chan bool, mark chan bool) {
+func JournalMessage(exit, mark chan bool) {
 	msgCount := 1
 
 	for {
@@ -37,7 +37,7 @@ func JournalMessage(done chan bool, mark chan bool) {
 		case <-mark:
 			fmt.Fprintf(os.Stderr, "mark %d\n", msgCount)
 			msgCount++
-		case <-done:
+		case <-exit:
 			fmt.Fprintf(os.Stderr, "exit JournalMessage()\n")
 			return
 		}
@@ -54,7 +54,8 @@ func main() {
 	cpuElevated := false
 	done := make(chan bool, runtime.NumCPU())
 	mark := make(chan bool)
-	go JournalMessage(done, mark)
+	exit := make(chan bool)
+	go JournalMessage(exit, mark)
 	goRoutineCount := 0
 
 	for {
@@ -79,7 +80,7 @@ func main() {
 				close(done)
 				close(sigChan)
 				close(mark)
-				time.Sleep(1 * time.Second)
+				close(exit)
 				return
 			}
 		default:
