@@ -54,6 +54,7 @@ func main() {
 	cpuElevated := false
 	done := make(chan bool, runtime.NumCPU())
 	mark := make(chan bool)
+	go JournalMessage(done, mark)
 
 	for {
 		select {
@@ -61,12 +62,12 @@ func main() {
 			if sig == syscall.SIGUSR1 {
 				fmt.Fprintf(os.Stderr, "sigusr1: toggle cpu utilization\n")
 				if !cpuElevated {
-					for i := 0; i < runtime.NumCPU(); i++ {
+					for i := 1; i <= runtime.NumCPU(); i++ {
 						go ElevateCPU(done, i)
 					}
 					cpuElevated = true
 				} else {
-					for i := 0; i < runtime.NumCPU(); i++ {
+					for i := 1; i <= runtime.NumCPU(); i++ {
 						done <- true
 					}
 				}
