@@ -57,7 +57,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var max_cores int
+	max_cores := runtime.NumCPU()
 	if *_speed < 0 || *_speed > 1.0 {
 		fmt.Fprintf(os.Stderr, "speed must be > 0 and <= 1\n")
 		os.Exit(1)
