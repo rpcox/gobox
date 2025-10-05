@@ -72,6 +72,7 @@ func main() {
 					for i := 1; i <= runtime.NumCPU(); i++ {
 						done <- true
 					}
+					cpuElevated = false
 				}
 			} else if sig == syscall.SIGUSR2 {
 				fmt.Fprintf(os.Stderr, "sigusr2: mark\n")
