@@ -90,11 +90,13 @@ func main() {
 				if !cpuElevated {
 					for i := 1; i <= max_cores; i++ {
 						go ElevateCPU(done, i)
+						time.Sleep(time.Duration(45) * time.Second)
 					}
 					cpuElevated = true
 				} else {
 					for i := 1; i <= max_cores; i++ {
 						done <- true
+						time.Sleep(time.Duration(45) * time.Second)
 					}
 					cpuElevated = false
 				}
