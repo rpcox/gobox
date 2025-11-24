@@ -1,4 +1,6 @@
 ## reset
+
+Need: the fastest method to reset a []byte slice keeping len and cap, and not changing the objects address.
     
 Recommendation is to use the method in benchmark1
     
