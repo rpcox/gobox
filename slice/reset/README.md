@@ -2,8 +2,7 @@
 
 Need: the fastest method to reset a []byte slice keeping len and cap, and not changing the objects address.
     
-Recommendation is to use the method in benchmark1
-    
+Address of 'a' does not change.    
     
     >  ./reset 
     a @ p=0x1400000e030 [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
@@ -12,6 +11,9 @@ Recommendation is to use the method in benchmark1
     a @ p=0x1400000e030 [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
     
     
+Recommendation is to use the method in benchmark1
+
+
 ### benchmark1
     
     benchmark1 >  go test -bench=. -count 5
