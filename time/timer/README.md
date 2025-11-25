@@ -1,6 +1,6 @@
 ## timer
 
-I needed timer at to signal a process it was time to work
+I needed a timer to signal a process when it was time to go to work
 
     > timer -at "2025-04-04 02:42:00" -interval 1m
     first alert time : 2025-04-04 02:42:00 +0000 UTC
