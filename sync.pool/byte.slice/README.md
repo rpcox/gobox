@@ -1,6 +1,6 @@
 ## byte.slice
     
-The data sample (data/16xkjv) is 16 concatinated copies of the King James Bible. Additional  workers wasn't faster.
+The data sample (data/16xkjv) is 16 concatinated copies of the King James Bible. Additional  workers wasn't faster. Uses bufio.Scanner.
     
 
     >  ./byte.slice -d data/16xkjv
