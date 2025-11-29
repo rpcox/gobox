@@ -11,9 +11,15 @@ import (
 	"time"
 )
 
+// A slice for read-only purposes
 var bufferSizes = []int{8, 16, 32, 64, 128, 256, 512, 1024, 2048}
 
-type Metrics struct {
+type SyncPoolManager struct {
+	pmu   sync.Mutex
+	pools map[int]*sync.Pool // Key is the buffer capacity
+}
+
+type MetricsManager struct {
 	mmu      sync.Mutex
 	GetTotal int64
 	PutTotal int64
@@ -22,16 +28,15 @@ type Metrics struct {
 
 // PoolManager manages multiple sync.Pools for different []byte sizes.
 type PoolManager struct {
-	pmu     sync.Mutex
-	pools   map[int]*sync.Pool // Key is the buffer capacity
-	metrics Metrics
+	spm SyncPoolManager
+	mm  MetricsManager
 }
 
 // Create a new PoolManager
 func NewPoolManager() *PoolManager {
 	return &PoolManager{
-		pools:   make(map[int]*sync.Pool),
-		metrics: Metrics{GetTotal: 0, PutTotal: 0, NewTotal: make(map[int]int)},
+		SyncPoolManager{pools: make(map[int]*sync.Pool)},
+		MetricsManager{GetTotal: 0, PutTotal: 0, NewTotal: make(map[int]int)},
 	}
 }
 
@@ -47,7 +52,7 @@ func (pm *PoolManager) Get(length int) *[]byte {
 	}
 
 	// Does the pool for this size []byte already exist
-	pool, exists := pm.pools[capacity]
+	pool, exists := pm.spm.pools[capacity]
 	// If the []byte pool of this size does not yet exist, create it
 	if !exists {
 		bs := make([]byte, capacity)
@@ -57,9 +62,9 @@ func (pm *PoolManager) Get(length int) *[]byte {
 				return &bs
 			},
 		}
-		pm.pmu.Lock()
-		pm.pools[capacity] = pool
-		pm.pmu.Unlock()
+		pm.spm.pmu.Lock()
+		pm.spm.pools[capacity] = pool
+		pm.spm.pmu.Unlock()
 	}
 
 	buf := pool.Get().(*[]byte)
@@ -68,27 +73,27 @@ func (pm *PoolManager) Get(length int) *[]byte {
 	reset := make([]byte, capacity)
 	*buf = reset
 
-	pm.metrics.mmu.Lock()
-	pm.metrics.GetTotal++
+	pm.mm.mmu.Lock()
+	pm.mm.GetTotal++
 	if !exists {
-		pm.metrics.NewTotal[capacity]++
+		pm.mm.NewTotal[capacity]++
 	}
-	pm.metrics.mmu.Unlock()
+	pm.mm.mmu.Unlock()
 
 	return buf
 }
 
 // Put returns a *[]byte to the appropriate pool.
 func (pm *PoolManager) Put(buf *[]byte) {
-	pm.metrics.mmu.Lock()
-	defer pm.metrics.mmu.Unlock()
-	pm.pmu.Lock()
-	defer pm.pmu.Unlock()
+	pm.mm.mmu.Lock()
+	defer pm.mm.mmu.Unlock()
+	pm.spm.pmu.Lock()
+	defer pm.spm.pmu.Unlock()
 
 	capacity := cap(*buf)
-	if pool, ok := pm.pools[capacity]; ok {
+	if pool, ok := pm.spm.pools[capacity]; ok {
 		pool.Put(buf)
-		pm.metrics.PutTotal++
+		pm.mm.PutTotal++
 	} else {
 		// We should always find the correct pool to return
 		fmt.Fprintf(os.Stderr, "error: unable to return buffer to pool\n")
@@ -97,12 +102,14 @@ func (pm *PoolManager) Put(buf *[]byte) {
 }
 
 func (pm *PoolManager) PoolCount() int {
-	return len(pm.pools)
+	return len(pm.spm.pools)
 }
 
 func (pm *PoolManager) PoolsInUse() []int {
+	pm.mm.mmu.Lock()
+	defer pm.mm.mmu.Unlock()
 	var a []int
-	for k, _ := range pm.pools {
+	for k, _ := range pm.spm.pools {
 		a = append(a, k)
 	}
 
@@ -111,17 +118,21 @@ func (pm *PoolManager) PoolsInUse() []int {
 }
 
 func (pm *PoolManager) GetTotal() int64 {
-	return pm.metrics.GetTotal
+	pm.mm.mmu.Lock()
+	defer pm.mm.mmu.Unlock()
+	return pm.mm.GetTotal
 }
 
 func (pm *PoolManager) PutTotal() int64 {
-	return pm.metrics.PutTotal
+	pm.mm.mmu.Lock()
+	defer pm.mm.mmu.Unlock()
+	return pm.mm.PutTotal
 }
 
 func (pm *PoolManager) PoolMap() {
 	keys := pm.PoolsInUse()
 	for _, v := range keys {
-		fmt.Fprintf(os.Stdout, "%4d byte bin slice count: %4d\n", v, pm.metrics.NewTotal[v])
+		fmt.Fprintf(os.Stdout, "%4d byte bin slice count: %4d\n", v, pm.mm.NewTotal[v])
 	}
 }
 
