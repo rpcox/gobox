@@ -148,6 +148,7 @@ func (pm *PoolManager) Worker(data <-chan *[]byte, id int, wg *sync.WaitGroup) {
 			fmt.Fprintf(os.Stderr, "error: missing %d bytes on copy\n", lenB-n)
 		}
 		pm.Put(buf)
+		bp = nil // done with this buffer
 
 		//
 		// Do work on the buf data
