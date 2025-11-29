@@ -170,6 +170,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)
 	}
+	defer fh.Close()
 
 	var wg sync.WaitGroup
 	data := make(chan *[]byte, 100)
