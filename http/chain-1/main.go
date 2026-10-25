@@ -31,6 +31,10 @@ func Logging(next http.Handler) http.Handler {
 		fmt.Fprintf(os.Stdout, "+ enter Logging: %s - - %s \"%s %s %s %s\"\n",
 			r.RemoteAddr, t0.Format(time.RFC822Z), r.Method, r.URL.Path, r.Proto, r.UserAgent())
 		next.ServeHTTP(w, r)
+		userID, ok := r.Context().Value(user).(string)
+		if ok { // note: this won't fire. context started in verify json
+			fmt.Fprintf(os.Stdout, " user action for %s completed\n", userID)
+		}
 		fmt.Fprintf(os.Stdout, "- exit Logging: %v\n", time.Since(t0))
 	})
 }
@@ -52,6 +56,7 @@ func VerifyJson(next http.Handler) http.Handler {
 				http.Error(w, s, http.StatusBadRequest) // sysntax/structure error
 				return
 			}
+
 			ctx := context.WithValue(r.Context(), user, req.Name)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
@@ -94,7 +99,10 @@ func HeaderSet(next http.Handler) http.Handler {
 // primary/main application handler for /
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(os.Stdout, "    + enter mainHandler\n")
+	userID, _ := r.Context().Value(user).(string)
+	s := fmt.Sprintf("usage valid for: %s\n", userID)
 	w.Write([]byte("hello chain\n"))
+	w.Write([]byte(s))
 	fmt.Fprintf(os.Stdout, "    - exit mainHandler\n")
 }
 

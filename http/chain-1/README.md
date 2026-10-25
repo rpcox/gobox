@@ -26,6 +26,7 @@
     <
     * Connection #0 to host localhost left intact
     hello chain
+    usage valid for: johndoe
     >
     
 #### server
