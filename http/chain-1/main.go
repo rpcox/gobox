@@ -55,7 +55,7 @@ func VerifyJson(next http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), user, req.Name)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
-		fmt.Fprintf(os.Stdout, " + exit VerifyJson\n")
+		fmt.Fprintf(os.Stdout, " - exit VerifyJson\n")
 	})
 }
 

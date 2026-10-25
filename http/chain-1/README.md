@@ -40,7 +40,7 @@
         - exit mainHandler
        - exit HeaderSet
       - exit Auth
-     + exit VerifyJson
+     - exit VerifyJson
     - exit Logging: 249.333µs
     ^C
     
@@ -119,6 +119,6 @@
      + enter VerifyJson
       + enter Auth
       + unauthorized user
-     + exit VerifyJson
+     - exit VerifyJson
     - exit Logging: 540.583µs
     ^C
