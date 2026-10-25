@@ -47,7 +47,7 @@ func VerifyJson(next http.Handler) http.Handler {
 
 			err := json.NewDecoder(r.Body).Decode(&req)
 			if err != nil {
-				s := `error: malformed json`
+				s := fmt.Sprintf("error: malformed json: %v", err)
 				fmt.Fprintf(os.Stdout, " + %s\n", s)
 				http.Error(w, s, http.StatusBadRequest) // sysntax/structure error
 				return

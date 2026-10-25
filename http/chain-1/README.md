@@ -69,7 +69,7 @@
     < Date: Sun, 25 Oct 2026 12:47:56 GMT
     < Content-Length: 22
     <
-    error: malformed json
+    error: malformed json: unexpected EOF
     * Connection #0 to host localhost left intact
     
 #### server
