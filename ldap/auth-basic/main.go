@@ -10,13 +10,6 @@ import (
 	"golang.org/x/term"
 )
 
-const (
-// LdapURL       = `ldap://tequila.lan:389`
-// BaseDN        = `ou=people,dc=cox,dc=lan`
-// ServiceBindDN = `uid=minion,ou=service,dc=cox,dc=lan`
-// ServiceBindPW = `Tomcat1200!`
-)
-
 func PasswordPrompt(prefix string) (string, error) {
 	fmt.Print(prefix + ` password: `)
 	bytePassword, err := term.ReadPassword(int(os.Stdin.Fd()))
