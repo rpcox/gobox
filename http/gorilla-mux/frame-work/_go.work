@@ -1,0 +1,8 @@
+go 1.27.3
+
+use (
+	http/gorilla-mux/frame-work/cmd/app
+	http/gorilla-mux/frame-work/pkg/handlers
+	http/gorilla-mux/frame-work/pkg/middleware
+	http/gorilla-mux/frame-work/pkg/routes
+)
